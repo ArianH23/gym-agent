@@ -6,7 +6,6 @@ from agent.prompts import ROUTER_PROMPT
 llm = ChatGoogleGenerativeAI(model="gemini-2.5-flash-lite", temperature=0)
 
 
-
 def router(state: AgentState) -> dict:
     question = state["messages"][-1].content
     print(f"[router] classifying: {question}")
