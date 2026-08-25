@@ -17,6 +17,7 @@ class AgentState(TypedDict):
     # 3. Entity Extraction & Semantic Context
     extracted_entities: Dict[str, Any]  # e.g., {"target_age": 30, "workout": "HIIT"}
     retrieved_context: List[str]  # Documents retrieved from ChromaDB
+    retrieved_doc_names: List[str]  # Exercise names for the retrieved documents (for UI display)
 
     # 4. Data Querying (Pandas/CSV)
     pandas_query_code: Optional[str]  # The generated Python/Pandas code

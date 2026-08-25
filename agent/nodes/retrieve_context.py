@@ -88,20 +88,22 @@ def retrieve_context(state: AgentState) -> dict:
 
     fetch_k = min(FETCH_K, _collection.count())
     results = _collection.query(
-        query_texts=[question], n_results=fetch_k, include=["documents", "distances"]
+        query_texts=[question], n_results=fetch_k, include=["documents", "distances", "metadatas"]
     )
     documents = results.get("documents", [[]])[0]
     distances = results.get("distances", [[]])[0]
+    metadatas = results.get("metadatas", [[]])[0]
     similarities = [1 / (1 + dist) for dist in distances]
 
-    top = []
+    top_docs, top_names = [], []
     if similarities:
         top_score = similarities[0]
-        for doc, score in zip(documents, similarities):
+        for doc, score, meta in zip(documents, similarities, metadatas):
             if score >= top_score - RELATIVE_MARGIN:
-                top.append(doc)
-            if len(top) == TOP_K:
+                top_docs.append(doc)
+                top_names.append(meta.get("db_name", "Unknown"))
+            if len(top_docs) == TOP_K:
                 break
 
-    print(f"[retrieve_context] retrieved {len(top)} matches (top-1 + within {RELATIVE_MARGIN} of top score)")
-    return {"retrieved_context": top}
+    print(f"[retrieve_context] retrieved {len(top_docs)} matches (top-1 + within {RELATIVE_MARGIN} of top score)")
+    return {"retrieved_context": top_docs, "retrieved_doc_names": top_names}
