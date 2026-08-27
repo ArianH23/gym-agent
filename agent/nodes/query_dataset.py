@@ -1,7 +1,9 @@
 import pandas as pd
+from langchain_core.messages import HumanMessage, SystemMessage
 from langchain_google_genai import ChatGoogleGenerativeAI
-from langchain_core.messages import SystemMessage, HumanMessage
+
 from agent.state import AgentState
+from agent.text_utils import strip_code_fences
 
 llm = ChatGoogleGenerativeAI(model="gemini-2.5-flash-lite", temperature=0)
 
@@ -49,11 +51,7 @@ def query_dataset(state: AgentState) -> dict:
         HumanMessage(content=question)
     ])
 
-    code = response.content.strip()
-    # Strip markdown code blocks if model adds them anyway
-    if code.startswith("```"):
-        code = code.split("\n", 1)[1]
-        code = code.rsplit("```", 1)[0].strip()
+    code = strip_code_fences(response.content)
 
     print(f"[query_dataset] generated code:\n{code}")
 
@@ -63,7 +61,7 @@ def query_dataset(state: AgentState) -> dict:
         exec(code, {}, local_vars)
         result = str(local_vars.get("result", "No result variable found"))
     except Exception as e:
-        result = f"Error executing query: {str(e)}"
+        result = f"Error executing query: {e!s}"
 
     print(f"[query_dataset] result: {result}")
     return {

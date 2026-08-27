@@ -1,15 +1,16 @@
 # graph.py
 from dotenv import load_dotenv
+
 load_dotenv()
 
-from langgraph.graph import StateGraph, START, END
-from agent.state import AgentState
-from agent.nodes.router import router
-from agent.nodes.query_dataset import query_dataset
-from agent.nodes.predict_calories import predict_calories
-from agent.nodes.retrieve_context import retrieve_context
-from agent.nodes.generate_answer import generate_answer
+from langgraph.graph import END, START, StateGraph
 
+from agent.nodes.generate_answer import generate_answer
+from agent.nodes.predict_calories import predict_calories
+from agent.nodes.query_dataset import query_dataset
+from agent.nodes.retrieve_context import retrieve_context
+from agent.nodes.router import router
+from agent.state import AgentState
 
 # def generate_answer(state: AgentState) -> dict:
 #     print(f"[generate_answer] stub — tool used: {state['next_tool']}")

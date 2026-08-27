@@ -1,9 +1,12 @@
-import pickle
-import pandas as pd
-from langchain_google_genai import ChatGoogleGenerativeAI
-from langchain_core.messages import SystemMessage, HumanMessage
-from agent.state import AgentState
 import json
+import pickle
+
+import pandas as pd
+from langchain_core.messages import HumanMessage, SystemMessage
+from langchain_google_genai import ChatGoogleGenerativeAI
+
+from agent.state import AgentState
+from agent.text_utils import strip_code_fences
 
 llm = ChatGoogleGenerativeAI(model="gemini-2.5-flash-lite", temperature=0)
 
@@ -44,16 +47,14 @@ def predict_calories(state: AgentState) -> dict:
         HumanMessage(content=question)
     ])
 
-    raw = response.content.strip()
-    if raw.startswith("```"):
-        raw = raw.split("\n", 1)[1].rsplit("```", 1)[0].strip()
+    raw = strip_code_fences(response.content)
 
     try:
         features = json.loads(raw)
     except Exception as e:
         return {
             "predicted_calories": None,
-            "dataset_results": f"Could not extract features from question: {str(e)}"
+            "dataset_results": f"Could not extract features from question: {e!s}"
         }
 
     print(f"[predict_calories] extracted features: {features}")
@@ -96,5 +97,5 @@ def predict_calories(state: AgentState) -> dict:
     except Exception as e:
         return {
             "predicted_calories": None,
-            "dataset_results": f"Prediction error: {str(e)}"
+            "dataset_results": f"Prediction error: {e!s}"
         }

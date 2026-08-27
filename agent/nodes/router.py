@@ -1,7 +1,8 @@
+from langchain_core.messages import HumanMessage, SystemMessage
 from langchain_google_genai import ChatGoogleGenerativeAI
-from langchain_core.messages import SystemMessage, HumanMessage
-from agent.state import AgentState
+
 from agent.prompts import ROUTER_PROMPT
+from agent.state import AgentState
 
 llm = ChatGoogleGenerativeAI(model="gemini-2.5-flash-lite", temperature=0)
 

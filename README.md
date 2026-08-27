@@ -46,3 +46,6 @@ Run:
 ```bash
 python run_test.py
 ```
+
+Model artifacts (`models/*.pkl`) are committed directly. To regenerate them from scratch, run:
+python -m models.train_model
