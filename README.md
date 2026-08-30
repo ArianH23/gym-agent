@@ -10,13 +10,22 @@ A multi-tool agentic system built with LangGraph that answers natural language q
 - **retrieve_context** — semantic search over a ChromaDB collection of exercise descriptions (name + muscles + instructions), sourced from [free-exercise-db](https://github.com/yuhonas/free-exercise-db) and matched against the project's exercise list via fuzzy matching (see `match_review.md`)
 - **generate_answer** — synthesizes tool outputs into natural language responses via Gemini
 
+## UI
+
+`app.py` is a Streamlit chat interface for the agent: submit a question, see the conversation history, and (for transparency) which node handled each query plus the retrieved document names for `retrieve_context` answers. A sidebar offers example questions covering each tool. See [Setup](#setup) for how to run it.
+
 ## Stack
 
-LangGraph, LangChain, Gemini, scikit-learn, pandas, ChromaDB, MLflow (planned), Streamlit (planned)
+LangGraph, LangChain, Gemini, scikit-learn, pandas, ChromaDB, Streamlit, MLflow
+
+## Evaluation & Tracking
+
+- **Model training** (`models/train_model.py`) logs params, metrics (MAE, R²), and the trained model itself to MLflow under the `calorie_predictor` experiment.
+- **Retrieval evaluation** (`scripts/eval_retrieve_context.py`) runs the 8 hand-picked `retrieve_context` eval queries (see Known Limitations below), and for each one logs an MLflow run: the query as a param, the top-3 retrieved documents' distances as metrics, and the synthesized final answer as a logged artifact. This also writes a human-readable `eval_results.md` summary (retrieved docs + scores + final answer per query) for quick review without opening the MLflow UI.
 
 ## Known Limitations
 
-1. **Retrieval quality depends on document density per exercise.** Of the 21 confirmed exercises in the ChromaDB collection, 12 have only 1 matched document. Any top-3 retrieval for those exercises structurally has to pull in unrelated filler to fill the remaining slots, regardless of embedding model — there's simply nothing else on-topic to retrieve.
+1. **Retrieval quality depends on document density per exercise.** Of the 24 confirmed exercises in the ChromaDB collection, 15 have only 1 matched document. Any top-3 retrieval for those exercises structurally has to pull in unrelated filler to fill the remaining slots, regardless of embedding model — there's simply nothing else on-topic to retrieve.
 2. **Gemini embeddings were evaluated as an alternative to ChromaDB's default (MiniLM) and reverted.** Swapping to Gemini's `gemini-embedding-001` did not improve semantic discrimination in this narrow, vocabulary-overlapping domain. It also compressed similarity scores into a tight band (~0.84–0.90 regardless of relevance) versus MiniLM's wider spread (~0.42–0.70), making similarity scores a less useful confidence signal. The default MiniLM embedding function is what's currently in use.
 
    The underlying discrimination weakness is a recurring pattern in this domain, not a one-off — confirmed with two separate documented examples:
@@ -26,7 +35,7 @@ LangGraph, LangChain, Gemini, scikit-learn, pandas, ChromaDB, MLflow (planned), 
    Trying alternate candidate variants for Lateral Raises to work around this was considered and rejected — that would mask the underlying embedding weakness rather than fix it.
 3. **The source data (free-exercise-db) has inconsistent muscle attribution across variants of the same base exercise.** For example, different Bench Press variants disagree on whether the primary muscle is chest or triceps depending on equipment. This is a source-data limitation, not a retrieval or synthesis bug — `generate_answer` reports what's in the retrieved documents faithfully.
 
-Further embedding-function or similarity-threshold tuning is not planned. The next priority is writing the 26 manual entries for currently-unconfirmed exercises (see `match_review.md`), which addresses the root cause (missing data) rather than compensating for it at retrieval time.
+Further embedding-function or similarity-threshold tuning is not planned. The next priority is writing manual entries for the remaining unconfirmed exercises (23 with no database match, plus a handful still pending review — see `match_review.md`), which addresses the root cause (missing data) rather than compensating for it at retrieval time.
 
 ## Setup
 
@@ -42,10 +51,17 @@ Add your Google API key to `.env`:
 GOOGLE_API_KEY=your_key_here
 ```
 
-Run:
+Run a single test query from the command line:
 ```bash
 python run_test.py
 ```
 
+Run the Streamlit chat UI:
+```bash
+streamlit run app.py
+```
+
 Model artifacts (`models/*.pkl`) are committed directly. To regenerate them from scratch, run:
+```bash
 python -m models.train_model
+```
