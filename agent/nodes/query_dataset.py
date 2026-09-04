@@ -4,6 +4,7 @@ from langchain_google_genai import ChatGoogleGenerativeAI
 
 from agent.state import AgentState
 from agent.text_utils import strip_code_fences
+from agent.sandbox import run_sandboxed
 
 llm = ChatGoogleGenerativeAI(model="gemini-2.5-flash-lite", temperature=0)
 
@@ -58,7 +59,8 @@ def query_dataset(state: AgentState) -> dict:
     try:
         df = pd.read_csv(CSV_PATH)
         local_vars = {"df": df}
-        exec(code, {}, local_vars)
+        run_sandboxed(code, local_vars)
+
         result = str(local_vars.get("result", "No result variable found"))
     except Exception as e:
         result = f"Error executing query: {e!s}"
