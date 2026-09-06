@@ -1,10 +1,10 @@
 import json
 import pickle
 
-import pandas as pd
 from langchain_core.messages import HumanMessage, SystemMessage
 from langchain_google_genai import ChatGoogleGenerativeAI
 
+from agent.prediction_utils import build_model_input, find_missing_features
 from agent.state import AgentState
 from agent.text_utils import strip_code_fences
 
@@ -59,7 +59,7 @@ def predict_calories(state: AgentState) -> dict:
 
     print(f"[predict_calories] extracted features: {features}")
 
-    nulls = [k for k, v in features.items() if v is None]
+    nulls = find_missing_features(features)
     if nulls:
         return {
             "predicted_calories": None,
@@ -68,22 +68,7 @@ def predict_calories(state: AgentState) -> dict:
         }
 
     try:
-        gender_encoded = encoders['Gender'].transform([features['Gender']])[0]
-        workout_encoded = encoders['Workout_Type'].transform([features['Workout_Type']])[0]
-
-        input_df = pd.DataFrame([[
-            features['Age'],
-            gender_encoded,
-            features['Weight_kg'],
-            features['Height_m'],
-            features['Session_Duration_hours'],
-            workout_encoded,
-            features['Experience_Level'],
-            features['Workout_Frequency_days_per_week'],
-        ]], columns=['Age', 'Gender', 'Weight (kg)', 'Height (m)',
-                     'Session_Duration (hours)', 'Workout_Type',
-                     'Experience_Level', 'Workout_Frequency (days/week)'])
-
+        input_df = build_model_input(features, encoders)
         input_scaled = scaler.transform(input_df)
         prediction = model.predict(input_scaled)[0]
 
