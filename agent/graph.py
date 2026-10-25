@@ -5,6 +5,7 @@ load_dotenv()
 
 from langgraph.graph import END, START, StateGraph
 
+from agent.nodes.combo import run_combo
 from agent.nodes.generate_answer import generate_answer
 from agent.nodes.predict_calories import predict_calories
 from agent.nodes.query_dataset import query_dataset
@@ -20,7 +21,12 @@ from agent.state import AgentState
 def route_to_tool(state: AgentState) -> str:
     if state["ambiguous_query"]:
         return END
-    return state["next_tool"] or END
+    next_tool = state["next_tool"]
+    if not next_tool:
+        return END
+    if "+" in next_tool:
+        return "combo"
+    return next_tool
 
 
 builder = StateGraph(AgentState)
@@ -30,17 +36,20 @@ builder.add_node("generate_answer", generate_answer)
 builder.add_node("query_dataset", query_dataset)
 builder.add_node("predict_calories", predict_calories)
 builder.add_node("retrieve_context", retrieve_context)
+builder.add_node("combo", run_combo)
 
 builder.add_edge(START, "router")
 builder.add_conditional_edges("router", route_to_tool, {
     "query_dataset": "query_dataset",
     "retrieve_context": "retrieve_context",
     "predict_calories": "predict_calories",
+    "combo": "combo",
     END: END,
 })
 builder.add_edge("query_dataset", "generate_answer")
 builder.add_edge("predict_calories", "generate_answer")
 builder.add_edge("retrieve_context", "generate_answer")
+builder.add_edge("combo", "generate_answer")
 builder.add_edge("generate_answer", END)
 
 graph = builder.compile()

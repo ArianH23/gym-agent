@@ -47,6 +47,7 @@ def run_eval():
                 "predicted_calories": None,
                 "final_answer": None,
                 "next_tool": None,
+                "failed_tools": {},
             })
 
             sections.append(f"## {i}. {query}")

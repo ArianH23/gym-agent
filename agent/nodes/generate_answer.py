@@ -22,6 +22,7 @@ def generate_answer(state: AgentState) -> dict:
         predicted_calories=state.get("predicted_calories"),
         prediction_inputs=state.get("prediction_inputs"),
         retrieved_context=state.get("retrieved_context"),
+        failed_tools=state.get("failed_tools"),
     )
 
     print(f"[generate_answer] synthesizing answer for tool: {next_tool}")

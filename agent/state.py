@@ -30,3 +30,6 @@ class AgentState(TypedDict):
 
     # 6. Final Output
     final_answer: str | None   # The synthesized natural language response
+
+    # 7. Multi-Tool Combo Handling
+    failed_tools: dict[str, str]  # Tool name -> error message, for tools that failed after retry inside a combo call

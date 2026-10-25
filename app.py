@@ -40,6 +40,7 @@ def run_query(question: str) -> dict:
         "predicted_calories": None,
         "final_answer": None,
         "next_tool": None,
+        "failed_tools": {},
     })
 
 
@@ -75,6 +76,6 @@ for entry in reversed(st.session_state.history):
         st.markdown(f"**Agent:** {entry['answer']}")
         if entry["tool"]:
             st.caption(f"Handled by: {entry['tool']}")
-        if entry["tool"] == "retrieve_context" and entry["doc_names"]:
+        if entry["tool"] and "retrieve_context" in entry["tool"].split("+") and entry["doc_names"]:
             st.caption("Retrieved documents: " + ", ".join(entry["doc_names"]))
     st.divider()

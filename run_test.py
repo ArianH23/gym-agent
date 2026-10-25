@@ -15,6 +15,7 @@ result = graph.invoke({
     "predicted_calories": None,
     "final_answer": None,
     "next_tool": None,
+    "failed_tools": {},
 })
 
 print("\n--- FINAL STATE ---")

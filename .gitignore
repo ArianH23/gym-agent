@@ -183,3 +183,19 @@ cython_debug/
 # MLflow tracking data (regenerated locally, not source)
 mlflow.db
 mlruns/
+
+# ChromaDB vector store (rebuilt locally from match_review.md + exercises_db.json)
+data/chroma_db/
+
+# Generated eval outputs (scripts/eval_*.py write these locally, not source)
+eval_results.md
+eval_results.md_ml.txt
+eval_query_dataset_results.md
+eval_predict_calories_results.md
+
+# VibeWise learning notes (local to this machine, not project source)
+.vibe-wise/
+.sensible-vibes/
+
+# Stray tool output logs
+ruffin.txt

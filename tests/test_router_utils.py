@@ -29,3 +29,36 @@ def test_unrecognized_decision_is_marked_ambiguous():
 def test_empty_response_is_marked_ambiguous():
     result = parse_router_decision("")
     assert result == {"next_tool": None, "ambiguous_query": True}
+
+
+def test_two_tools_are_combined_into_canonical_order():
+    result = parse_router_decision("retrieve_context+predict_calories")
+    assert result == {"next_tool": "predict_calories+retrieve_context", "ambiguous_query": False}
+
+
+def test_three_tools_are_combined():
+    result = parse_router_decision("query_dataset+predict_calories+retrieve_context")
+    assert result == {
+        "next_tool": "predict_calories+query_dataset+retrieve_context",
+        "ambiguous_query": False,
+    }
+
+
+def test_combo_with_whitespace_around_plus_is_normalized():
+    result = parse_router_decision("predict_calories + retrieve_context")
+    assert result == {"next_tool": "predict_calories+retrieve_context", "ambiguous_query": False}
+
+
+def test_duplicate_tokens_in_combo_are_deduplicated():
+    result = parse_router_decision("predict_calories+predict_calories")
+    assert result == {"next_tool": "predict_calories", "ambiguous_query": False}
+
+
+def test_combo_with_one_invalid_token_keeps_only_valid_tools():
+    result = parse_router_decision("predict_calories+banana")
+    assert result == {"next_tool": "predict_calories", "ambiguous_query": False}
+
+
+def test_all_invalid_tokens_in_combo_is_ambiguous():
+    result = parse_router_decision("banana+apple")
+    assert result == {"next_tool": None, "ambiguous_query": True}
